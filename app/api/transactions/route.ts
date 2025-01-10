@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import SaleEvent from '@/models/SaleEvent';
-import TaxPaymentEvent from '@/models/TaxPaymentEvent';
+import SaleEvent from '@/models/saleEvent';
+import TaxPaymentEvent from '@/models/taxPaymentEvent';
 import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
@@ -14,12 +14,15 @@ export async function POST(req: NextRequest) {
   if (!mongoose.connection.readyState) {
     await mongoose.connect(process.env.MONGO_URI || '');
   }
-
   try {
     switch (data.eventType) {
       case 'SALES': {
         // Validate sale event data
-        if (!data.invoiceId || !data.items || !Array.isArray(data.items) || data.items.length === 0) {
+        console.log(data.invoiceId)
+        console.log(data.items === null)
+        console.log(!Array.isArray(data.items))
+        console.log(data.items.length === 0)
+        if (data.invoiceId === null || data.items === null || !Array.isArray(data.items) || data.items.length === 0) {
           return NextResponse.json({ message: 'Invalid Sale Event data' }, { status: 400 });
         }
 
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
 
       case 'TAX_PAYMENT': {
         // Validate tax payment data
-        if (!data.amount) {
+        if (data.amount === null) {
           return NextResponse.json({ message: 'Invalid Tax Payment Event data' }, { status: 400 });
         }
 

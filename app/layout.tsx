@@ -1,12 +1,21 @@
-// app/layout.tsx or _app.tsx
 import QueryClientWrapper from './providers';
 import "./globals.css";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from '@/components/app-sidebar/app-sidebar';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className="w-full">
+        {/* Wrapping with both QueryClientWrapper and SidebarProvider */}
         <QueryClientWrapper>
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <main className="w-full"> {/* Ensure main content is full width */}
+              <SidebarTrigger />
+              {children}
+            </main>
+          </SidebarProvider>
         </QueryClientWrapper>
       </body>
     </html>

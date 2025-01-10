@@ -1,6 +1,6 @@
 // pages/api/sale.ts
 import { NextRequest, NextResponse } from "next/server";
-import SaleEvent from "@/models/SaleEvent";
+import SaleEvent from "@/models/sale_event";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
