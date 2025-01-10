@@ -1,18 +1,39 @@
 import mongoose from 'mongoose';
 
-const itemSchema = new mongoose.Schema({
-  itemId: { type: String, required: true },
-  cost: { type: Number, required: true }, // in pennies
-  taxRate: { type: Number, required: true },
+const saleItemSchema = new mongoose.Schema({
+  itemId: {
+    type: String,
+    required: true,
+  },
+  cost: {
+    type: Number,
+    required: true,
+  },
+  taxRate: {
+    type: Number,
+    required: true,
+  },
 });
 
 const saleEventSchema = new mongoose.Schema({
-  eventType: { type: String, enum: ['SALES'], required: true },
-  date: { type: Date, required: true },
-  invoiceId: { type: String, required: true },
-  items: [itemSchema],
+  eventType: {
+    type: String,
+    required: true,
+    enum: ['SALES'], // Only "SALES" is valid for this schema
+  },
+  date: {
+    type: Date,
+    required: true,
+  },
+  invoiceId: {
+    type: String,
+    required: true,
+  },
+  items: {
+    type: [saleItemSchema],
+    required: true,
+  },
 });
 
-const SaleEvent = mongoose.models.SaleEvent || mongoose.model('SaleEvent', saleEventSchema);
-
+const SaleEvent = mongoose.model('SaleEvent', saleEventSchema);
 export default SaleEvent;

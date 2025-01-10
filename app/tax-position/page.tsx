@@ -1,56 +1,46 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-const TaxPosition = () => {
-  const [date, setDate] = useState("");
-  const [taxPosition, setTaxPosition] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+type TaxPositionResponse = {
+  date: string;
+  taxPosition: number;
+};
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+// Fetch function to retrieve tax position data
+async function fetchTaxPosition(date: string): Promise<TaxPositionResponse> {
+  const response = await fetch(`/api/tax-position?date=${date}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch tax position");
+  }
+  return response.json();
+}
 
-    if (!date) {
-      setError("Please provide a date.");
-      return;
-    }
+export default function QueryTaxPosition() {
+  const [date, setDate] = useState<string>("");
 
-    setError(null); // Clear any previous error
-
-    try {
-      const response = await fetch(`/api/tax-position?date=${date}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch tax position.");
-      }
-
-      const data = await response.json();
-      setTaxPosition(data.taxPosition);
-    } catch (err) {
-      setError("Error fetching tax position: " + err.message);
-    }
-  };
+  // UseQuery with proper type annotations
+  const { data, error, isLoading } = useQuery<TaxPositionResponse, Error>({
+    queryKey: ["taxPosition", date],
+    queryFn: () => fetchTaxPosition(date),
+    enabled: !!date, // Only run query if date is provided
+  });
 
   return (
     <div>
       <h1>Query Tax Position</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Date (ISO 8601):
-          <input
-            type="datetime-local"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </label>
-        <button type="submit">Query Tax Position</button>
-      </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {taxPosition !== null && (
-        <p>Tax Position on {date}: £{(taxPosition / 100).toFixed(2)}</p>
+      <input
+        type="datetime-local"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+      />
+      {isLoading && <p>Loading...</p>}
+      {error && <p>Error: {error.message}</p>}
+      {data && (
+        <p>
+          Tax Position as of {data.date}: £{(data.taxPosition / 100).toFixed(2)}
+        </p>
       )}
     </div>
   );
-};
-
-export default TaxPosition;
+}

@@ -1,7 +1,7 @@
 // pages/api/tax-position.ts
 import { NextRequest, NextResponse } from "next/server";
-import SaleEvent from "@/models/saleEvent";
-import TaxPaymentEvent from "@/models/taxPaymentEvent";
+import SaleEvent from "@/models/SaleEvent";
+import TaxPaymentEvent from "@/models/TaxPaymentEvent";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";

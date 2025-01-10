@@ -1,12 +1,20 @@
 import mongoose from 'mongoose';
 
 const taxPaymentEventSchema = new mongoose.Schema({
-  eventType: { type: String, enum: ['TAX_PAYMENT'], required: true },
-  date: { type: Date, required: true },
-  amount: { type: Number, required: true }, // in pennies
+  eventType: {
+    type: String,
+    required: true,
+    enum: ['TAX_PAYMENT'], // Only "TAX_PAYMENT" is valid for this schema
+  },
+  date: {
+    type: Date,
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
 });
 
-const TaxPaymentEvent =
-  mongoose.models.TaxPaymentEvent || mongoose.model('TaxPaymentEvent', taxPaymentEventSchema);
-
+const TaxPaymentEvent = mongoose.model('TaxPaymentEvent', taxPaymentEventSchema);
 export default TaxPaymentEvent;
