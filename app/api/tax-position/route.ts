@@ -1,8 +1,7 @@
-// pages/api/tax-position.ts
 import { NextRequest, NextResponse } from "next/server";
 import SaleEvent from "@/models/saleEvent";
 import TaxPaymentEvent from "@/models/taxPaymentEvent";
-import mongoose from "mongoose";
+import connectToDatabase from "@/lib/mongodb";  // Import the connect function
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +14,8 @@ export async function GET(req: NextRequest) {
 
   const date = new Date(dateParam);
 
-  // Connect to MongoDB
-  if (!mongoose.connection.readyState) {
-    await mongoose.connect(process.env.MONGO_URI || "");
-  }
+  // Connect to MongoDB using the centralized connection logic
+  await connectToDatabase();
 
   try {
     // Get all sale events and tax payments

@@ -19,7 +19,7 @@ async function connectToDatabase(): Promise<Mongoose> {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGO_URI, {
-        dbName: "taxservice", // Optional: Set a specific database name
+        dbName: "taxservice", 
       }).then((mongooseInstance) => {
       return mongooseInstance;
     });

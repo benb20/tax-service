@@ -9,8 +9,6 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   const data = await req.json();
 
-  console.log('Request data:', data);
-
   // Connect to MongoDB
   if (!mongoose.connection.readyState) {
     await mongoose.connect(process.env.MONGO_URI || '');
@@ -81,8 +79,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Invalid event type' }, { status: 400 });
     }
 
-    // Successful response
-    return NextResponse.json({}, { status: 202 });
+    // Return status code 202 with no body
+    return new NextResponse(null, { status: 202 });
   } catch (error) {
     // Type guard to handle the error as an Error object
     if (error instanceof Error) {

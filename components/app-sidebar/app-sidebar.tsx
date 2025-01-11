@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import { ModeToggle } from "../theme-toggle";
 
-// Menu items.
 const items = [
   {
     title: "Transactions",
@@ -55,7 +54,6 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Sidebar Footer with Settings button */}
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>

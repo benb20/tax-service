@@ -1,16 +1,16 @@
 "use client";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import Swal from "sweetalert2"; // Import SweetAlert2
-import { Button } from "@/components/ui/button"; // Import Button from ShadCN
-import { Input } from "@/components/ui/input"; // Import Input from ShadCN
-import { CalendarIcon } from "lucide-react"; // Import Calendar Icon
-import { Calendar } from "@/components/ui/calendar"; // Import Calendar from ShadCN
+import Swal from "sweetalert2"; 
+import { Button } from "@/components/ui/button"; 
+import { Input } from "@/components/ui/input";
+import { CalendarIcon } from "lucide-react"; 
+import { Calendar } from "@/components/ui/calendar"; 
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"; // Import Popover
+} from "@/components/ui/popover"; 
 import {
   Select,
   SelectContent,
@@ -19,10 +19,10 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // Import Select from ShadCN
-import { EventType } from "@/types/eventTypes"; // Import Enum
-import { format } from "date-fns"; // Import date formatting utility
-import { cn } from "@/lib/utils"; // Utility for conditional class names
+} from "@/components/ui/select"; 
+import { EventType } from "@/types/eventTypes"; 
+import { format } from "date-fns"; 
+import { cn } from "@/lib/utils"; 
 import * as z from "zod";
 
 // Define Zod validation schema for the transaction data
@@ -98,7 +98,7 @@ async function postTransaction(data: TransactionData): Promise<void> {
     throw new Error("Failed to save transaction");
   }
 
-  await response.json();
+  // await response.json();
 }
 
 export default function AddTransaction() {

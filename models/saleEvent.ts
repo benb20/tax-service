@@ -19,7 +19,7 @@ const saleEventSchema = new mongoose.Schema({
   eventType: {
     type: String,
     required: true,
-    enum: ['SALES'], // Only "SALES" is valid for this schema
+    enum: ['SALES'], 
   },
   date: {
     type: Date,

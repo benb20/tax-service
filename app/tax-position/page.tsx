@@ -8,8 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import Swal from "sweetalert2"; 
 import { format } from "date-fns"; 
 import { Loader2 } from "lucide-react"; 
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"; // Tooltip components
-import { InfoIcon } from "lucide-react"; // Info icon from lucide-react
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"; 
+import { InfoIcon } from "lucide-react"; 
 
 // Type for the response from the /tax-position API
 type TaxPositionResponse = {
@@ -101,14 +101,12 @@ export default function QueryTaxPosition() {
           <div className="mt-2 text-3xl font-semibold flex items-center">
             <p>£{(data.taxPosition / 100).toFixed(2)}</p>
             
-            {/* Tooltip Component with InfoIcon */}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger className="ml-2 text-gray-500 cursor-pointer">
-                  <InfoIcon className="h-5 w-5" /> {/* Info icon from lucide-react */}
+                  <InfoIcon className="h-5 w-5" /> 
                 </TooltipTrigger>
                 <TooltipContent>
-                  {/* Conditionally render the tooltip message based on the value of taxPosition */}
                   <p>
                     {data.taxPosition > 0
                       ? `${(data.taxPosition / 100).toFixed(2)} due`

@@ -7,6 +7,15 @@ This service handles the processing of **Sales** and **Tax Payment Events**, as 
 2. Store amendments to sales, even if the original sale does not yet exist.
 3. Apply the latest amendments to any newly created sale.
 
+### Tech Stack
+The following stack and versions are used to develop and deploy this service:
+- Framework: Next.js - v15.1.4
+- Programming Language: TypeScript - v5.x
+- Database: MongoDB - Compatible with v6.x
+- ORM/ODM: Mongoose - v8.9.3
+- Environment Management: dotenv/docker
+- Node.js: Node.js - v18.x
+
 ---
 ## Installation Guide
 
@@ -64,7 +73,7 @@ MONGO_URI=mongodb://0.0.0.0:27017/taxservice
    - Allow amendments to be submitted even if the corresponding sale does not yet exist.
    - Amendments are stored in a dedicated collection: `sale_amendment_events`.
    - Apply amendments automatically to sales once they are created.
-![alt text](image-2.png)
+![alt text](image-3.png)
 ---
 
 ## Project Structure
@@ -179,6 +188,13 @@ Request Body:
 }
 ```
 
-# Final notes
+# Final notes/improvements
+
+This was a good take-home task which presented some interesting challenges. I have addressed ambiguities to the best of my knowledge on the domain given without further clarification.
 
 In terms of the specification of this project, I have also decided not to implement any more APIs than were listed. If I were to, I would have added a table view of transactions so you could visually see them, and then edit them from there more interactively. This would have required another ```GET``` request or two so I opted not to.
+
+### Potential improvements
+1) Use [mongodb-memory-server](https://github.com/typegoose/mongodb-memory-server) or [sqllite](https://www.npmjs.com/package/sqlite3) for ease of development/deployment 
+2) Add github workflows or other CI/CD to auto run jest/run type checks like tsc.
+3) Implement further jest tests.

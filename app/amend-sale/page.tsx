@@ -42,7 +42,7 @@ async function amendSale(data: SaleAmendmentData): Promise<void> {
     throw new Error("Failed to amend sale");
   }
 
-  await response.json();
+  // await response.json();
 }
 
 export default function AmendSale() {

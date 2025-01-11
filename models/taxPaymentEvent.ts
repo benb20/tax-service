@@ -4,7 +4,7 @@ const taxPaymentEventSchema = new mongoose.Schema({
   eventType: {
     type: String,
     required: true,
-    enum: ['TAX_PAYMENT'], // Only "TAX_PAYMENT" is valid for this schema
+    enum: ['TAX_PAYMENT'], 
   },
   date: {
     type: Date,
