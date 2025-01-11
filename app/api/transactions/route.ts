@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import SaleEvent from '@/models/saleEvent';
 import TaxPaymentEvent from '@/models/taxPaymentEvent';
+import SaleAmendmentEvent from '@/models/saleAmendmentEvent';
 import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
@@ -14,21 +15,53 @@ export async function POST(req: NextRequest) {
   if (!mongoose.connection.readyState) {
     await mongoose.connect(process.env.MONGO_URI || '');
   }
+
   try {
     switch (data.eventType) {
       case 'SALES': {
         // Validate sale event data
-        console.log(data.invoiceId)
-        console.log(data.items === null)
-        console.log(!Array.isArray(data.items))
-        console.log(data.items.length === 0)
-        if (data.invoiceId === null || data.items === null || !Array.isArray(data.items) || data.items.length === 0) {
+        if (
+          data.invoiceId === null ||
+          data.items === null ||
+          !Array.isArray(data.items) ||
+          data.items.length === 0
+        ) {
           return NextResponse.json({ message: 'Invalid Sale Event data' }, { status: 400 });
         }
 
         // Create and save SaleEvent
         const saleEvent = new SaleEvent(data);
         await saleEvent.save();
+
+        // Check for any amendments associated with this invoiceId
+        const latestAmendment = await SaleAmendmentEvent.findOne({ invoiceId: data.invoiceId })
+          .sort({ date: -1 }); // Get the latest amendment by date
+
+        if (latestAmendment) {
+          // Apply amendments to the newly created sale
+          for (const amendment of [latestAmendment]) {
+            const existingItem = saleEvent.items.find(
+              (item) => item.itemId === amendment.itemId
+            );
+
+            if (existingItem) {
+              // Update the existing item
+              existingItem.cost = amendment.cost;
+              existingItem.taxRate = amendment.taxRate;
+            } else {
+              // Add the amendment as a new item if it doesn't already exist
+              saleEvent.items.push({
+                itemId: amendment.itemId,
+                cost: amendment.cost,
+                taxRate: amendment.taxRate,
+              });
+            }
+          }
+
+          // Save the updated sale event
+          await saleEvent.save();
+        }
+
         break;
       }
 
@@ -51,7 +84,8 @@ export async function POST(req: NextRequest) {
     // Successful response
     return NextResponse.json({}, { status: 202 });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }

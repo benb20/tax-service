@@ -1,13 +1,13 @@
 // pages/api/sale.ts
 import { NextRequest, NextResponse } from "next/server";
-import SaleEvent from "@/models/sale_event";
+import SaleEvent from "@/models/saleEvent";
+import SaleAmendmentEvent from "@/models/saleAmendmentEvent";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
 
 export async function PATCH(req: NextRequest) {
   const data = await req.json();
-
   const { date, invoiceId, itemId, cost, taxRate } = data;
 
   // Connect to MongoDB
@@ -16,27 +16,48 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    // Find the sale event with the given invoiceId and itemId
+    // Log the amendment to the sale_amendment_events collection
+    const amendment = new SaleAmendmentEvent({
+      date: date || new Date(),
+      invoiceId,
+      itemId,
+      cost,
+      taxRate,
+    });
+    await amendment.save();
+
+    // Find the sale event with the given invoiceId
     const saleEvent = await SaleEvent.findOne({ invoiceId });
 
     if (!saleEvent) {
-      return NextResponse.json({ message: "Sale event not found" }, { status: 404 });
+      // If the sale does not exist, return 202 (amendment saved but no sale to update)
+      return NextResponse.json(
+        { message: "Amendment saved. Sale does not exist yet." },
+        { status: 202 }
+      );
     }
 
-    const item = saleEvent.items.find((i) => i.itemId === itemId);
+    // Find the item within the sale event
+    let item = saleEvent.items.find((i) => i.itemId === itemId);
 
     if (!item) {
-      return NextResponse.json({ message: "Item not found in the sale" }, { status: 404 });
+      // If the item doesn't exist, add it to the sale
+      item = {
+        itemId,
+        cost,
+        taxRate,
+      };
+      saleEvent.items.push(item);
+    } else {
+      // If the item exists, update its cost and tax rate
+      item.cost = cost;
+      item.taxRate = taxRate;
     }
-
-    // Update the item's cost and tax rate
-    item.cost = cost;
-    item.taxRate = taxRate;
 
     // Save the updated sale event
     await saleEvent.save();
 
-    return NextResponse.json({}, { status: 202 });
+    return NextResponse.json({ message: "Sale updated and amendment logged." }, { status: 202 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

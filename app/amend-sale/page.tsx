@@ -149,7 +149,7 @@ export default function AmendSale() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Cost (in pennies):</label>
+        <label className="block text-sm font-medium text-gray-700">Cost (p):</label>
         <Input
           type="number"
           value={cost}

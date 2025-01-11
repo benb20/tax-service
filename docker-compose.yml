@@ -10,8 +10,6 @@ services:
       - MONGO_URI=mongodb://db:27017/taxservice
     depends_on:
       - db
-    volumes:
-      - .:/app
 
   db:
     image: mongo:6.0
