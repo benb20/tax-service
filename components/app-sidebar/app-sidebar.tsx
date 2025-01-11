@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { ModeToggle } from "../theme-toggle";
 
 // Menu items.
 const items = [
@@ -58,12 +59,13 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            {/* <SidebarMenuButton asChild>
               <a href="/settings">
                 <Cog size={20} />
                 <span>Settings</span>
               </a>
-            </SidebarMenuButton>
+            </SidebarMenuButton> */}
+            <ModeToggle/>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

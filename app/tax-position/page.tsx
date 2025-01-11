@@ -1,13 +1,15 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Button } from "@/components/ui/button"; // ShadCN Button
-import { CalendarIcon } from "lucide-react"; // Calendar Icon for selecting date
-import { Calendar } from "@/components/ui/calendar"; // ShadCN Calendar
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // ShadCN Popover
-import Swal from "sweetalert2"; // SweetAlert for success/error messages
-import { format } from "date-fns"; // for formatting dates
-import { Loader2 } from "lucide-react"; // Loader spinner for the button
+import { Button } from "@/components/ui/button"; 
+import { CalendarIcon } from "lucide-react"; 
+import { Calendar } from "@/components/ui/calendar"; 
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
+import Swal from "sweetalert2"; 
+import { format } from "date-fns"; 
+import { Loader2 } from "lucide-react"; 
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"; // Tooltip components
+import { InfoIcon } from "lucide-react"; // Info icon from lucide-react
 
 // Type for the response from the /tax-position API
 type TaxPositionResponse = {
@@ -46,16 +48,13 @@ export default function QueryTaxPosition() {
   // Handle button click to trigger the API call
   const handleFetchTaxPosition = () => {
     if (date) {
-      refetch(); // Trigger the fetch when the button is clicked
+      refetch().catch(handleError); // Catch the error and pass it to handleError
     }
   };
 
-  // Render the component
   return (
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">Query Tax Position</h1>
-
-      {/* Date picker with Calendar popover */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Select Date</label>
         <Popover>
@@ -76,7 +75,6 @@ export default function QueryTaxPosition() {
         </Popover>
       </div>
 
-      {/* Fetch button */}
       <Button
         onClick={handleFetchTaxPosition}
         disabled={!date || isLoading}
@@ -89,7 +87,6 @@ export default function QueryTaxPosition() {
         )}
       </Button>
 
-      {/* Displaying the results */}
       {error && (
         <div className="mt-4 text-red-500">
           <p>Error: {error.message}</p>
@@ -97,10 +94,30 @@ export default function QueryTaxPosition() {
       )}
 
       {data && (
-        <div className="mt-4 text-lg">
-          <p>
-            Tax Position as of {data.date}: £{(data.taxPosition / 100).toFixed(2)}
+        <div className="mt-4 text-lg flex flex-col items-center">
+          <p className="text-center">
+            Tax Position as of {format(new Date(data.date), 'PPP')}
           </p>
+          <div className="mt-2 text-3xl font-semibold flex items-center">
+            <p>£{(data.taxPosition / 100).toFixed(2)}</p>
+            
+            {/* Tooltip Component with InfoIcon */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="ml-2 text-gray-500 cursor-pointer">
+                  <InfoIcon className="h-5 w-5" /> {/* Info icon from lucide-react */}
+                </TooltipTrigger>
+                <TooltipContent>
+                  {/* Conditionally render the tooltip message based on the value of taxPosition */}
+                  <p>
+                    {data.taxPosition > 0
+                      ? `${(data.taxPosition / 100).toFixed(2)} due`
+                      : `${(data.taxPosition / 100).toFixed(2)} overpaid`}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       )}
     </div>

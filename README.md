@@ -1,4 +1,4 @@
-# Sales and Amendments Management Service
+# Tax Service
 
 ## Overview
 
@@ -37,16 +37,20 @@ This service handles the processing of **Sales** and **Tax Payment Events**, as 
 5. Stop the Services: To stop the running services, run:
 
     ```bash
-    Copy code
     docker-compose down
     ```
 6. View Logs: If you want to view logs from the running containers, use:
 
     ```bash
-    Copy code
     docker-compose logs -f
     ```
 
+### Note:
+
+If using docker as above, .env.local is not required. Otherwise, using MongoDB manually will require:
+```
+MONGO_URI=mongodb://0.0.0.0:27017/taxservice
+```
 ## Features
 
 1. **Transactions (http://localhost:3000/transactions)**:
@@ -142,7 +146,7 @@ For **Tax Payment Events**:
 
 
 ### 2. **GET `/api/tax-position`**
-Allows a user to query their tax position at any given point in time. This endpoint calculates the tax position from ingested events. I have decided to only taken into account sales, not pending amendments for sales which have not yet been entered.
+Allows a user to query their tax position at any given point in time. This endpoint calculates the tax position from ingested events. I have decided to only taken into existing sales, not pending amendments for sales which have not yet been entered.
 #### Request Query Parameters:
 - **date** (ISO 8601 format)
   - Mandatory.
@@ -174,3 +178,7 @@ Request Body:
   "date": "2023-01-10T00:00:00.000Z"
 }
 ```
+
+# Final notes
+
+In terms of the specification of this project, I have also decided not to implement any more APIs than were listed. If I were to, I would have added a table view of transactions so you could visually see them, and then edit them from there more interactively. This would have required another ```GET``` request or two so I opted not to.

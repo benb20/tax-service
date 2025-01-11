@@ -52,6 +52,11 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    // Type guard to handle the error as an Error object
+    if (error instanceof Error) {
+      return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+    // If the error is not an instance of Error, return a generic error message
+    return NextResponse.json({ message: "An unknown error occurred" }, { status: 500 });
   }
 }

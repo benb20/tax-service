@@ -1,4 +1,3 @@
-// pages/api/sale.ts
 import { NextRequest, NextResponse } from "next/server";
 import SaleEvent from "@/models/saleEvent";
 import SaleAmendmentEvent from "@/models/saleAmendmentEvent";
@@ -41,13 +40,14 @@ export async function PATCH(req: NextRequest) {
     let item = saleEvent.items.find((i) => i.itemId === itemId);
 
     if (!item) {
-      // If the item doesn't exist, add it to the sale
-      item = {
+      // If the item doesn't exist, create a new item and push it to the saleEvent
+      const newItem = new mongoose.Types.Subdocument({
         itemId,
         cost,
         taxRate,
-      };
-      saleEvent.items.push(item);
+      });
+
+      saleEvent.items.push(newItem);
     } else {
       // If the item exists, update its cost and tax rate
       item.cost = cost;
@@ -59,6 +59,11 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ message: "Sale updated and amendment logged." }, { status: 202 });
   } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    // Type guard to handle the error as an Error object
+    if (error instanceof Error) {
+      return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+    // If the error is not an instance of Error, return a generic error message
+    return NextResponse.json({ message: "An unknown error occurred" }, { status: 500 });
   }
 }

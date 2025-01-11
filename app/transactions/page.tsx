@@ -32,26 +32,60 @@ const ItemSchema = z.object({
   taxRate: z.number().min(0, "Tax rate cannot be negative").max(1, "Tax rate must be between 0 and 1"), // Ensure tax rate is between 0 and 1
 });
 
-const TransactionDataSchema = z.object({
-  eventType: z.enum([EventType.SALES, EventType.TAX_PAYMENT]),
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid date format",
-  }),
-  invoiceId: z.string().optional(),
-  items: z.array(ItemSchema).optional(), // Items are optional for TAX_PAYMENT
-  amount: z.number().optional(), // Amount is optional but should be used for TAX_PAYMENT
-}).refine((data) => {
-  // Only validate invoiceId if the eventType is SALES
-  if (data.eventType === EventType.SALES && !data.invoiceId) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Invoice ID is required for sales events",
-  path: ["invoiceId"],
-});
+const TransactionDataSchema = z
+  .object({
+    eventType: z.enum([EventType.SALES, EventType.TAX_PAYMENT]),
+    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: "Invalid date format",
+    }),
+    invoiceId: z.string().optional(),
+    items: z
+      .array(
+        z.object({
+          itemId: z.string().min(1, "Item ID is required"),
+          cost: z.number().nonnegative("Cost must be zero or greater"),
+          taxRate: z
+            .number()
+            .min(0, "Tax rate cannot be negative")
+            .max(1, "Tax rate must be between 0 and 1"),
+        })
+      )
+      .optional(), // Items are optional for TAX_PAYMENT
+    amount: z.number().optional(), // Amount is optional but should be used for TAX_PAYMENT
+  })
+  .refine(
+    (data) => {
+      if (data.eventType === EventType.SALES) {
+        return data.items && data.items.length > 0; // Ensure at least one item is added for SALES
+      }
+      return true; // No additional validation for TAX_PAYMENT
+    },
+    {
+      message: "At least one item must be added for sales events",
+      path: ["items"], // This sets the error under the 'items' field
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.eventType === EventType.SALES && !data.invoiceId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Invoice ID is required for sales events",
+      path: ["invoiceId"],
+    }
+  );
+
 
 type TransactionData = z.infer<typeof TransactionDataSchema>;
+
+// Dropdown event types, with display names for the UI
+const eventTypeLabels: { [key in EventType]: string } = {
+  [EventType.SALES]: "Sales",
+  [EventType.TAX_PAYMENT]: "Tax Payment",
+};
 
 async function postTransaction(data: TransactionData): Promise<void> {
   const response = await fetch("/api/transactions", {
@@ -70,9 +104,9 @@ async function postTransaction(data: TransactionData): Promise<void> {
 export default function AddTransaction() {
   const [eventType, setEventType] = useState<EventType>(EventType.SALES);
   const [amount, setAmount] = useState<number>(0);
-  const [date, setDate] = useState<Date | null>(null); // Keep date field intact
+  const [date, setDate] = useState<Date | null>(null); 
   const [items, setItems] = useState<{ itemId: string; cost: number; taxRate: number }[]>([]);
-  const [invoiceId, setInvoiceId] = useState<string>(""); // State for invoiceId
+  const [invoiceId, setInvoiceId] = useState<string>(""); 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const mutation = useMutation<void, Error, TransactionData>({
@@ -98,35 +132,30 @@ export default function AddTransaction() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     // Prepare the transaction data based on event type
     const transactionData: TransactionData = {
       eventType,
       date: date ? date.toISOString() : "",
       invoiceId: eventType === EventType.SALES ? invoiceId : undefined, // Include invoiceId only for SALES
       amount: eventType === EventType.TAX_PAYMENT ? amount : undefined, // Include amount only for TAX_PAYMENT
+      items: eventType === EventType.SALES ? items : undefined, // Include items only for SALES
     };
-
-    // Exclude `items` for TAX_PAYMENT
-    if (eventType === EventType.SALES) {
-      transactionData.items = items; // Only include items for SALES
-    }
-
-    // Validate with Zod before submitting
+  
     try {
+      // Validate transaction data with Zod schema
       TransactionDataSchema.parse(transactionData); // This will throw an error if validation fails
-
-      // Call mutate with transaction data
-      mutation.mutate(transactionData);
+      mutation.mutate(transactionData); // Submit data if valid
+      setErrors({}); // Clear any existing errors on success
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: { [key: string]: string } = {};
-
+  
         // Populate error messages for the fields
         error.errors.forEach((err) => {
           newErrors[err.path[0]] = err.message;
         });
-
+  
         setErrors(newErrors); // Set error state for showing validation errors
       }
     }
@@ -140,19 +169,19 @@ export default function AddTransaction() {
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-4">
       <div>
         <label className="block text-sm font-medium text-gray-700">Event Type:</label>
-        <Select
-          value={eventType}
-          onValueChange={(value) => setEventType(value as EventType)}
-          className={`mt-2 w-full p-2 border rounded-md ${errors.eventType ? "border-red-500" : ""}`}
-        >
-          <SelectTrigger>
+        <Select value={eventType} onValueChange={(value) => setEventType(value as EventType)}>
+          <SelectTrigger className={`mt-2 w-full p-2 border rounded-md ${errors.eventType ? "border-red-500" : ""}`}>
             <SelectValue placeholder="Select event type" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Event Types</SelectLabel>
-              <SelectItem value={EventType.SALES}>{EventType.SALES}</SelectItem>
-              <SelectItem value={EventType.TAX_PAYMENT}>{EventType.TAX_PAYMENT}</SelectItem>
+              <SelectItem value={EventType.SALES}>
+                {eventTypeLabels[EventType.SALES]} 
+              </SelectItem>
+              <SelectItem value={EventType.TAX_PAYMENT}>
+                {eventTypeLabels[EventType.TAX_PAYMENT]} 
+              </SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -172,12 +201,14 @@ export default function AddTransaction() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              initialFocus
-            />
+          <Calendar
+            mode="single"
+            selected={date ?? undefined} // Ensure date is either a Date or undefined, not null
+            onSelect={(newDate) => {
+              setDate(newDate ?? null);  // If newDate is undefined, set it to null
+            }}
+            initialFocus
+          />
           </PopoverContent>
         </Popover>
         {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
@@ -251,7 +282,10 @@ export default function AddTransaction() {
                       value={item.taxRate}
                       onChange={(e) => {
                         const updatedItems = [...items];
-                        updatedItems[index].taxRate = Math.min(1, Math.max(0, Number(e.target.value))); // Ensure tax rate is between 0 and 1
+                        updatedItems[index].taxRate = Math.min(
+                          1,
+                          Math.max(0, Number(e.target.value))
+                        ); // Ensure tax rate is between 0 and 1
                         setItems(updatedItems);
                       }}
                       placeholder="Tax Rate"
@@ -271,18 +305,21 @@ export default function AddTransaction() {
           </div>
           <Button
             type="button"
-            onClick={() => setItems([...items, { itemId: "", cost: 0, taxRate: 0 }])}
-            className="mt-4 bg-green-600 text-white"
+            onClick={() =>
+              setItems([...items, { itemId: "", cost: 0, taxRate: 0 }])
+            }
+            className={`mt-4 ${errors.items ? "bg-red-600" : "bg-green-600"} text-white`}
           >
-            Add Item
+            {errors.items ? "Add Item (Required)" : "Add Item"}
           </Button>
+          {errors.items && (
+            <p className="text-red-500 text-sm mt-1">{errors.items}</p>
+          )}
         </div>
       )}
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-blue-600 text-white">
-          Submit
-        </Button>
+        <Button type="submit" className="w-full sm:w-auto mt-4">Submit</Button>
       </div>
     </form>
   );

@@ -83,9 +83,12 @@ export async function POST(req: NextRequest) {
 
     // Successful response
     return NextResponse.json({}, { status: 202 });
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ message: errorMessage }, { status: 500 });
+  } catch (error) {
+    // Type guard to handle the error as an Error object
+    if (error instanceof Error) {
+      return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+    // If the error is not an instance of Error, return a generic error message
+    return NextResponse.json({ message: "An unknown error occurred" }, { status: 500 });
   }
 }
