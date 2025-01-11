@@ -102,15 +102,15 @@ export default function QueryTaxPosition() {
             <p>£{(data.taxPosition / 100).toFixed(2)}</p>
             
             <TooltipProvider>
-              <Tooltip>
+              <Tooltip delayDuration={100} > {/* Reduced delay for quicker tooltip visibility */}
                 <TooltipTrigger className="ml-2 text-gray-500 cursor-pointer">
-                  <InfoIcon className="h-5 w-5" /> 
+                  <InfoIcon className="h-5 w-5" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    {data.taxPosition > 0
-                      ? `${(data.taxPosition / 100).toFixed(2)} due`
-                      : `${(data.taxPosition / 100).toFixed(2)} overpaid`}
+                    {data.taxPosition >= 0
+                      ? `£${(data.taxPosition / 100).toFixed(2)} tax payments due`
+                      : `£${(data.taxPosition / 100).toFixed(2)} tax payments overpaid`}
                   </p>
                 </TooltipContent>
               </Tooltip>

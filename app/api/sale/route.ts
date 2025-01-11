@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import SaleEvent from "@/models/saleEvent";
 import SaleAmendmentEvent from "@/models/saleAmendmentEvent";
-import connectToDatabase from "@/lib/mongodb";  // Import the connect function
+import connectToDatabase from "@/lib/mongodb"; // Import the connect function
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
@@ -36,14 +36,12 @@ export async function PATCH(req: NextRequest) {
     let item = saleEvent.items.find((i) => i.itemId === itemId);
 
     if (!item) {
-      // If the item doesn't exist, create a new item and push it to the saleEvent
-      const newItem = new mongoose.Types.Subdocument({
+      // If the item doesn't exist, create a new item object and push it to the saleEvent
+      saleEvent.items.push({
         itemId,
         cost,
         taxRate,
       });
-
-      saleEvent.items.push(newItem);
     } else {
       // If the item exists, update its cost and tax rate
       item.cost = cost;
@@ -56,7 +54,7 @@ export async function PATCH(req: NextRequest) {
     // Return status code 202 with no body
     return new NextResponse(null, { status: 202 });
   } catch (error) {
-    console.log(error)
+    console.log(error);
 
     // Type guard to handle the error as an Error object
     if (error instanceof Error) {
